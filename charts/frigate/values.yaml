@@ -21,7 +21,8 @@ env: {}
   # TZ: UTC
 
 # -- set environment variables from Secret(s)
-envFromSecrets: []
+envFromSecrets: 
+  - frigate
   # secrets are required before `helm install`
   # - frigate-rstp-credentials
 

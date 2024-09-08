@@ -33,16 +33,22 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
     {{- end }}
+      initContainers:
+        - name: init-config
+          image: busybox
+          command: ['sh', '-c', 'cp -r /tmp/config.yml /config/']
+          volumeMounts:
+          - mountPath: /tmp/config.yml
+            subPath: config.yml
+            name: configmap
+          - mountPath: /config
+            name: config
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ include "frigate.imageTag" . }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            {{- if and .Values.coral.enabled (not .Values.securityContext) }}
             privileged: true
-            {{- else }}
-            {{- toYaml .Values.securityContext | nindent 12 }}
-            {{- end }}
           ports:
             - name: http
               containerPort: 5000
@@ -53,6 +59,12 @@ spec:
             - name: rtsp
               containerPort: 8554
               protocol: TCP
+            - name: webrtc-tcp
+              containerPort: 8555
+              protocol: TCP
+            - name: webrtc-udp
+              containerPort: 8555
+              protocol: UDP
           {{- if .Values.probes.liveness.enabled }}
           livenessProbe:
             httpGet:
@@ -103,9 +115,8 @@ spec:
             - mountPath: {{ .Values.coral.hostPath }}
               name: coral-dev
             {{- end }}
-            - mountPath: /config/config.yml
-              subPath: config.yml
-              name: configmap
+            - mountPath: /dev/dri/renderD128
+              name: intel-hwaccel
             - mountPath: /config
               name: config
             - mountPath: /data
@@ -130,6 +141,9 @@ spec:
           hostPath:
             path: {{ .Values.coral.hostPath }}
         {{- end }}
+        - name: intel-hwaccel
+          hostPath:
+            path: /dev/dri/renderD128
         - name: config
         {{- if .Values.persistence.config.enabled }}
           persistentVolumeClaim:
