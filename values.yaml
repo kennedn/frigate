@@ -1,12 +1,19 @@
 image:
-  tag: 2fc58fe
+  tag: 389c707
   pullPolicy: Always
+# -- Set resource limits/requests for the Pod(s)
+resources:
+  limits:
+    memory: 4000Mi
+  requests:
+    memory: 128Mi
 config: |
   ui:
     strftime_fmt: '%d/%m/%Y %H:%M'
   mqtt:
     host: mosquitto.default.svc.cluster.local
   ffmpeg:
+    path: '5.0'
     hwaccel_args: preset-vaapi
     output_args:
       record: preset-record-generic-audio-copy
@@ -20,10 +27,12 @@ config: |
     retain:
       days: 3
       mode: motion
-    events:
+    alerts:
       retain:
-        default: 14
-        mode: motion
+        days: 14
+    detections:
+      retain:
+        days: 14
   birdseye:
     enabled: true
     mode: continuous
@@ -60,20 +69,21 @@ config: |
       motion:
         #        threshold: 30
         mask: 0.027,1,0.108,0.838,0.18,0.701,0.245,0.576,0.294,0.487,0.375,0.352,0.446,0.24,0.509,0.143,0.505,0,0,0,0,1
-          #        contour_area: 10
-          #        improve_contrast: 'true'
+        #        contour_area: 10
+      #        improve_contrast: 'true'
       zones:
         front_door:
           coordinates: 0.881,0.74,0.848,0.714,0.863,0.616,0.576,0.745,0.473,1,0.818,1
-            #          loitering_time: 0
+          #          loitering_time: 0
+
           objects:
             - person
             - dog
-              #          inertia: 3
+            #          inertia: 3
         front_enterance:
           coordinates: 0.913,0,0.44,0,0.22,0.375,0.864,0.533,0.887,0.352
-            #          loitering_time: 0
-            #          inertia: 1
+          #          loitering_time: 0
+      #          inertia: 1
       review:
         alerts:
           required_zones:
@@ -91,21 +101,25 @@ config: |
       live:
         stream_name: back_garden
       motion:
+        lightning_threshold: 0.6
         #        threshold: 45
+
         mask:
           - 0.189,0.304,0,0.404,0,0,0.703,0,0.706,0.031,0.481,0.124
           - 1,0,0.856,0,0.839,0.46,0.834,0.824,0.846,0.851,0.834,1,1,1
-            #        contour_area: 10
-            #        improve_contrast: 'true'
+          - 0.831,0.815,0.743,0.802,0.557,0.852,0.508,0.837,0.454,0.806,0.428,0.774,0.424,0.68,0.413,0.596,0.415,0.491,0.431,0.409,0.447,0.35,0.469,0.259,0.501,0.115,0.59,0.085,0.624,0.067,0.709,0,0.731,0,0.868,0,0.865,0.124,0.866,0.204,0.865,0.265,0.87,0.302,0.873,0.363,0.876,0.757
       objects:
         mask:
           - 0.189,0.304,0,0.404,0,0,0.703,0,0.706,0.031,0.481,0.124
           - 1,0,0.856,0,0.839,0.46,0.834,0.824,0.846,0.851,0.834,1,1,1
       zones:
         back_enterance:
-          coordinates: 0.234,0.338,0.191,0.305,0.252,0.262,0.318,0.384,0.471,0.406,0.442,0.548,0.453,0.734,0.536,0.829,0.644,0.838,0.754,0.803,0.833,0.816,0.834,0.843,0.848,0.847,0.837,0.999,0.331,0.999,0.305,0.946,0.258,0.668,0.232,0.451,0.229,0.399,0.24,0.385
-            #          loitering_time: 0
-            #          inertia: 2
+          coordinates: 0.234,0.338,0.191,0.305,0.253,0.269,0.495,0.121,0.467,0.257,0.411,0.493,0.429,0.801,0.551,0.855,0.644,0.838,0.754,0.803,0.833,0.816,0.834,0.843,0.848,0.847,0.837,0.999,0.313,1,0.305,0.946,0.258,0.668,0.232,0.451,0.229,0.399,0.24,0.385
+          #          loitering_time: 0
+
+          #          inertia: 2
+          inertia: 3
+          loitering_time: 0
       review:
         alerts:
           required_zones:
@@ -119,7 +133,7 @@ config: |
     alerts:
       labels:
         - person
-  version: 0.14
+  version: 0.15-1
   camera_groups:
     cameras:
       order: 1
