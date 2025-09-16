@@ -1,5 +1,5 @@
 image:
-  tag: 389c707
+  tag: 0.15.2
   pullPolicy: Always
 # -- Set resource limits/requests for the Pod(s)
 resources:
@@ -41,20 +41,48 @@ config: |
     retain:
       default: 90
   go2rtc:
+    webrtc:
+      candidates:
+        - 192.168.1.201:8555
+        - stun:8555
     streams:
       front_garden:
         - rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.1.163:554/Streaming/Channels/101
-        - ffmpeg:front_garden#audio=aac
+        - ffmpeg:front_garden#audio=aac#audio=opus
       front_garden_sub:
         - rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.1.163:554/Streaming/Channels/102
-        - ffmpeg:front_garden_sub#audio=aac
+        - ffmpeg:front_garden_sub#audio=aac#audio=opus
       back_garden:
         - rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.1.162:554/Streaming/Channels/101
-        - ffmpeg:back_garden#audio=aac
+        - ffmpeg:back_garden#audio=aac#audio=opus
       back_garden_sub:
         - rtsp://{FRIGATE_RTSP_USER}:{FRIGATE_RTSP_PASSWORD}@192.168.1.162:554/Streaming/Channels/102
-        - ffmpeg:back_garden_sub#audio=aac
+        - ffmpeg:back_garden_sub#audio=aac#audio=opus
+      livingroom:
+        - tapo://{FRIGATE_TAPO_PASSWORD}@192.168.1.165
+        - ffmpeg:livingroom#audio=aac#audio=opus
+      livingroom_sub:
+        - rtsp://{FRIGATE_TAPO_USER}:{FRIGATE_TAPO_PASSWORD}@192.168.1.165:554/stream2
+        - ffmpeg:livingroom_sub#audio=aac#audio=opus
   cameras:
+    livingroom:
+      ffmpeg:
+        inputs:
+          - path: rtsp://127.0.0.1:8554/livingroom
+            roles:
+              - record
+          - path: rtsp://127.0.0.1:8554/livingroom_sub
+            roles:
+              - detect
+      onvif:
+        host: 192.168.1.165
+        port: 2020
+        user: "{FRIGATE_TAPO_USER}"
+        password: "{FRIGATE_TAPO_PASSWORD}"
+      zones:
+        living_room:
+          coordinates: 0,0,0,1,1,1,1,0
+          loitering_time: 0
     front_garden:
       ffmpeg:
         inputs:
